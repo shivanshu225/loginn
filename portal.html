@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal Sign In — Meridian Hill Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest:#16302A; --forest-deep:#0E211C; --parchment:#F4EFE1; --paper:#FCFAF3;
+    --brass:#AD8A4E; --brass-light:#D9BE8A; --slate:#3E5C6B; --ink:#1F2420; --ink-soft:#4A5148;
+    --line:rgba(31,36,32,0.14); --white:#FFFFFF; --radius:2px; --focus:3px solid #C9601F;
+    --good:#2E7D4F;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--parchment); color:var(--ink); font-family:'Inter',system-ui,sans-serif;
+    line-height:1.55; min-height:100vh; display:flex; flex-direction:column;
+  }
+  h1,h2,h3,h4{ font-family:'Fraunces',Georgia,serif; font-weight:600; line-height:1.1; margin:0 0 .4em; color:var(--forest-deep); }
+  p{ margin:0 0 1em; color:var(--ink-soft); }
+  a{ color:inherit; }
+  :focus-visible{ outline:var(--focus); outline-offset:2px; }
+  .eyebrow{ font-family:'IBM Plex Mono',monospace; font-size:.72rem; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--brass); display:inline-block; margin-bottom:.7em; }
+
+  header.site{ background:var(--forest); }
+  .nav-row{ max-width:1180px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:16px 28px; }
+  .brand{ display:flex; align-items:center; gap:12px; text-decoration:none; }
+  .brand-mark{ width:34px; height:34px; }
+  .brand-text{ font-family:'Fraunces'; font-weight:600; color:var(--white); font-size:1.05rem; }
+  .brand-text span{ display:block; font-family:'IBM Plex Mono'; font-size:.58rem; letter-spacing:.14em; color:var(--brass-light); text-transform:uppercase; margin-top:2px; }
+  .back-link{ color:rgba(255,255,255,.75); text-decoration:none; font-size:.86rem; display:flex; align-items:center; gap:6px; }
+  .back-link:hover{ color:var(--white); }
+
+  main{ flex:1; display:flex; align-items:flex-start; justify-content:center; padding:56px 20px; }
+  .portal-wrap{ width:100%; max-width:520px; }
+
+  .role-tabs{ display:flex; gap:8px; margin-bottom:28px; }
+  .role-tab{
+    flex:1; padding:14px 8px; background:var(--paper); border:1.5px solid var(--line); border-radius:var(--radius);
+    cursor:pointer; text-align:center; font-family:'IBM Plex Mono'; font-size:.72rem; letter-spacing:.06em; text-transform:uppercase;
+    font-weight:600; color:var(--ink-soft); transition:border-color .15s, background .15s, color .15s;
+  }
+  .role-tab .icon{ display:block; font-family:'Fraunces'; font-size:1.4rem; margin-bottom:6px; color:var(--forest-deep); }
+  .role-tab[aria-pressed="true"]{ border-color:var(--brass); background:var(--forest); color:var(--white); }
+  .role-tab[aria-pressed="true"] .icon{ color:var(--brass-light); }
+
+  .auth-card{ background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:34px; }
+  .auth-mode-toggle{ display:flex; gap:4px; background:var(--parchment); padding:4px; border-radius:var(--radius); margin-bottom:26px; }
+  .mode-btn{ flex:1; padding:9px; background:none; border:none; cursor:pointer; font-family:'Inter'; font-weight:600; font-size:.84rem; color:var(--ink-soft); border-radius:var(--radius); }
+  .mode-btn[aria-selected="true"]{ background:var(--white); color:var(--forest-deep); box-shadow:0 1px 2px rgba(0,0,0,.08); }
+
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-family:'IBM Plex Mono'; font-size:.68rem; letter-spacing:.06em; text-transform:uppercase; margin-bottom:7px; color:var(--slate); }
+  .field input{ width:100%; padding:12px 13px; border:1px solid var(--line); background:var(--paper); color:var(--ink); border-radius:var(--radius); font-family:'Inter'; font-size:.94rem; }
+  .field input:focus{ background:var(--white); }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .hint{ font-size:.78rem; color:var(--ink-soft); margin-top:-8px; margin-bottom:16px; }
+
+  .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; font-family:'Inter'; font-weight:600; font-size:.94rem; padding:13px 26px; border-radius:var(--radius); border:1.5px solid transparent; cursor:pointer; width:100%; }
+  .btn-primary{ background:var(--brass); color:var(--forest-deep); }
+  .btn-primary:hover{ background:var(--brass-light); }
+  .error-msg{ color:#B3401D; font-size:.82rem; margin:-6px 0 14px; display:none; }
+  .error-msg.show{ display:block; }
+  .demo-note{ font-size:.76rem; color:var(--ink-soft); text-align:center; margin-top:16px; }
+
+  /* Dashboard */
+  .dashboard{ display:none; width:100%; max-width:880px; }
+  .dash-header{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:32px; flex-wrap:wrap; gap:16px; }
+  .dash-id{ display:flex; gap:16px; align-items:center; }
+  .avatar{ width:60px; height:60px; border-radius:50%; background:var(--forest); color:var(--brass-light); font-family:'Fraunces'; font-weight:600; font-size:1.4rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .dash-id .role-pill{ font-family:'IBM Plex Mono'; font-size:.66rem; letter-spacing:.08em; text-transform:uppercase; color:var(--slate); background:var(--paper); border:1px solid var(--line); padding:3px 9px; display:inline-block; margin-top:4px; }
+  .logout-btn{ background:none; border:1px solid var(--line); padding:9px 16px; border-radius:var(--radius); cursor:pointer; font-family:'Inter'; font-size:.84rem; font-weight:600; color:var(--ink-soft); }
+  .logout-btn:hover{ border-color:var(--brass); color:var(--forest-deep); }
+
+  .dash-grid{ display:grid; grid-template-columns:2fr 1fr; gap:24px; }
+  .panel{ background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:26px; margin-bottom:24px; }
+  .panel h4{ font-size:1.02rem; margin-bottom:14px; }
+  .stat-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:24px; }
+  .stat-box{ background:var(--forest); color:var(--white); padding:20px; border-radius:var(--radius); text-align:center; }
+  .stat-box .num{ font-family:'Fraunces'; font-size:1.7rem; font-weight:600; color:var(--brass-light); }
+  .stat-box .label{ font-family:'IBM Plex Mono'; font-size:.62rem; letter-spacing:.06em; text-transform:uppercase; color:rgba(255,255,255,.65); margin-top:4px; }
+
+  table.sched{ width:100%; border-collapse:collapse; font-size:.88rem; }
+  table.sched th, table.sched td{ text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); }
+  table.sched th{ font-family:'IBM Plex Mono'; font-size:.64rem; text-transform:uppercase; letter-spacing:.05em; color:var(--slate); }
+
+  .assign-item{ display:flex; justify-content:space-between; padding:11px 0; border-top:1px solid var(--line); font-size:.88rem; }
+  .assign-item:first-child{ border-top:none; }
+  .assign-item .due{ font-family:'IBM Plex Mono'; font-size:.72rem; color:var(--slate); }
+  .info-line{ display:flex; justify-content:space-between; padding:9px 0; border-top:1px solid var(--line); font-size:.86rem; }
+  .info-line:first-child{ border-top:none; }
+  .info-line .k{ color:var(--ink-soft); }
+  .info-line .v{ font-weight:600; color:var(--forest-deep); }
+
+  @media (max-width:720px){
+    .dash-grid{ grid-template-columns:1fr; }
+    .role-tabs{ flex-direction:column; }
+    .field-row{ grid-template-columns:1fr; }
+    .stat-row{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="nav-row">
+    <a href="index.html" class="brand">
+      <svg class="brand-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <path d="M20 3 L37 12 V28 L20 37 L3 28 V12 Z" stroke="#D9BE8A" stroke-width="1.6"/>
+        <path d="M20 12 L29 17 V27 L20 32 L11 27 V17 Z" fill="#AD8A4E"/>
+      </svg>
+      <span class="brand-text">Meridian Hill<span>Academy Portal</span></span>
+    </a>
+    <a href="index.html" class="back-link">&larr; Back to main site</a>
+  </div>
+</header>
+
+<main>
+  <!-- LOGIN / SIGN UP -->
+  <div class="portal-wrap" id="authView">
+    <span class="eyebrow">Parents &amp; Students Portal</span>
+    <h2 style="margin-bottom:8px;">Sign in to your account</h2>
+    <p style="margin-bottom:28px;">Select your role, then sign in or create an account to continue.</p>
+
+    <div class="role-tabs" role="group" aria-label="Select account type">
+      <button type="button" class="role-tab" data-role="student" aria-pressed="true"><span class="icon">S</span>Student</button>
+      <button type="button" class="role-tab" data-role="teacher" aria-pressed="false"><span class="icon">T</span>Teacher</button>
+      <button type="button" class="role-tab" data-role="principal" aria-pressed="false"><span class="icon">P</span>Principal</button>
+    </div>
+
+    <div class="auth-card">
+      <div class="auth-mode-toggle" role="tablist">
+        <button class="mode-btn" role="tab" aria-selected="true" data-mode="signup" type="button">Sign Up</button>
+        <button class="mode-btn" role="tab" aria-selected="false" data-mode="login" type="button">Log In</button>
+      </div>
+
+      <form id="authForm">
+        <div class="field" id="fullNameField">
+          <label for="fullName">Full name</label>
+          <input type="text" id="fullName" placeholder="e.g. Ava Chen" autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="username">Username</label>
+          <input type="text" id="username" placeholder="Choose a username" autocomplete="username" required>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="••••••••" autocomplete="new-password" required>
+          </div>
+          <div class="field" id="confirmField">
+            <label for="confirmPassword">Confirm password</label>
+            <input type="password" id="confirmPassword" placeholder="••••••••" autocomplete="new-password">
+          </div>
+        </div>
+        <p class="error-msg" id="errorMsg">Passwords don't match — please re-enter.</p>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Sign Up</button>
+      </form>
+      <p class="demo-note">This is a demo portal — accounts aren't stored or verified against real student records.</p>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="dashboard" id="dashboardView">
+    <div class="dash-header">
+      <div class="dash-id">
+        <div class="avatar" id="dashAvatar">AC</div>
+        <div>
+          <h2 id="dashName" style="margin-bottom:2px;">Ava Chen</h2>
+          <span class="role-pill" id="dashRolePill">Student · Grade 10</span>
+        </div>
+      </div>
+      <button class="logout-btn" id="logoutBtn">Log Out</button>
+    </div>
+
+    <!-- STUDENT DASHBOARD -->
+    <div id="studentDash">
+      <div class="stat-row">
+        <div class="stat-box"><div class="num">3.8</div><div class="label">Current GPA</div></div>
+        <div class="stat-box"><div class="num">96%</div><div class="label">Attendance</div></div>
+        <div class="stat-box"><div class="num">4</div><div class="label">Assignments Due</div></div>
+      </div>
+      <div class="dash-grid">
+        <div>
+          <div class="panel">
+            <h4>Today's schedule</h4>
+            <table class="sched">
+              <thead><tr><th>Period</th><th>Course</th><th>Room</th><th>Time</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>English Literature</td><td>Rm 204</td><td>8:00 – 8:50</td></tr>
+                <tr><td>2</td><td>Algebra II</td><td>Rm 118</td><td>9:15 – 10:05</td></tr>
+                <tr><td>3</td><td>Chemistry Lab</td><td>Sci Wing B</td><td>10:15 – 11:05</td></tr>
+                <tr><td>4</td><td>World History</td><td>Rm 210</td><td>11:15 – 12:05</td></tr>
+                <tr><td>5</td><td>Studio Art</td><td>Arts Center</td><td>1:00 – 1:50</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="panel">
+            <h4>Upcoming assignments</h4>
+            <div class="assign-item"><span>Chemistry — Lab Report 4</span><span class="due">Due Thu</span></div>
+            <div class="assign-item"><span>English — Essay draft, "The Crucible"</span><span class="due">Due Fri</span></div>
+            <div class="assign-item"><span>Algebra II — Problem Set 9</span><span class="due">Due Mon</span></div>
+            <div class="assign-item"><span>World History — Reading, Ch. 14</span><span class="due">Due Tue</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="panel">
+            <h4>Student details</h4>
+            <div class="info-line"><span class="k">Student ID</span><span class="v">MH-20817</span></div>
+            <div class="info-line"><span class="k">Grade level</span><span class="v">10th Grade</span></div>
+            <div class="info-line"><span class="k">Homeroom</span><span class="v">Rm 204 — Ms. Lindqvist</span></div>
+            <div class="info-line"><span class="k">Advisor</span><span class="v">James Tran</span></div>
+            <div class="info-line"><span class="k">Lunch balance</span><span class="v">$34.50</span></div>
+            <div class="info-line"><span class="k">Bus route</span><span class="v">Route 6 — Riverdale</span></div>
+          </div>
+          <div class="panel">
+            <h4>Recent report card</h4>
+            <div class="info-line"><span class="k">English Literature</span><span class="v">A-</span></div>
+            <div class="info-line"><span class="k">Algebra II</span><span class="v">B+</span></div>
+            <div class="info-line"><span class="k">Chemistry</span><span class="v">A</span></div>
+            <div class="info-line"><span class="k">World History</span><span class="v">A-</span></div>
+            <div class="info-line"><span class="k">Studio Art</span><span class="v">A</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEACHER DASHBOARD -->
+    <div id="teacherDash" style="display:none;">
+      <div class="stat-row">
+        <div class="stat-box"><div class="num">5</div><div class="label">Classes Taught</div></div>
+        <div class="stat-box"><div class="num">118</div><div class="label">Students Total</div></div>
+        <div class="stat-box"><div class="num">12</div><div class="label">Papers to Grade</div></div>
+      </div>
+      <div class="dash-grid">
+        <div>
+          <div class="panel">
+            <h4>Today's classes</h4>
+            <table class="sched">
+              <thead><tr><th>Period</th><th>Course</th><th>Room</th><th>Roster</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>Chemistry I</td><td>Sci Wing B</td><td>24</td></tr>
+                <tr><td>2</td><td>Chemistry I</td><td>Sci Wing B</td><td>22</td></tr>
+                <tr><td>3</td><td>AP Chemistry</td><td>Sci Wing A</td><td>18</td></tr>
+                <tr><td>5</td><td>Chemistry Lab</td><td>Sci Wing B</td><td>24</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <div class="panel">
+            <h4>Staff details</h4>
+            <div class="info-line"><span class="k">Staff ID</span><span class="v">MH-T-0412</span></div>
+            <div class="info-line"><span class="k">Department</span><span class="v">Science</span></div>
+            <div class="info-line"><span class="k">Room</span><span class="v">Sci Wing B</span></div>
+            <div class="info-line"><span class="k">Years at MHA</span><span class="v">7</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRINCIPAL DASHBOARD -->
+    <div id="principalDash" style="display:none;">
+      <div class="stat-row">
+        <div class="stat-box"><div class="num">640</div><div class="label">Total Enrollment</div></div>
+        <div class="stat-box"><div class="num">78</div><div class="label">Faculty &amp; Staff</div></div>
+        <div class="stat-box"><div class="num">96%</div><div class="label">School-wide Attendance</div></div>
+      </div>
+      <div class="dash-grid">
+        <div>
+          <div class="panel">
+            <h4>Enrollment by division</h4>
+            <table class="sched">
+              <thead><tr><th>Division</th><th>Students</th><th>Avg. Class Size</th></tr></thead>
+              <tbody>
+                <tr><td>Lower School (K–5)</td><td>240</td><td>16</td></tr>
+                <tr><td>Middle School (6–8)</td><td>190</td><td>18</td></tr>
+                <tr><td>Upper School (9–12)</td><td>210</td><td>17</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <div class="panel">
+            <h4>Administrator details</h4>
+            <div class="info-line"><span class="k">Staff ID</span><span class="v">MH-A-0001</span></div>
+            <div class="info-line"><span class="k">Office</span><span class="v">Main Hall, Rm 100</span></div>
+            <div class="info-line"><span class="k">Years at MHA</span><span class="v">11</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  var selectedRole = 'student';
+  var mode = 'signup';
+
+  var roleTabs = document.querySelectorAll('.role-tab');
+  roleTabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      roleTabs.forEach(function(t){ t.setAttribute('aria-pressed','false'); });
+      tab.setAttribute('aria-pressed','true');
+      selectedRole = tab.dataset.role;
+    });
+  });
+
+  var modeBtns = document.querySelectorAll('.mode-btn');
+  var fullNameField = document.getElementById('fullNameField');
+  var confirmField = document.getElementById('confirmField');
+  var submitBtn = document.getElementById('submitBtn');
+  modeBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      modeBtns.forEach(function(b){ b.setAttribute('aria-selected','false'); });
+      btn.setAttribute('aria-selected','true');
+      mode = btn.dataset.mode;
+      var isSignup = mode === 'signup';
+      fullNameField.style.display = isSignup ? 'block' : 'none';
+      confirmField.style.display = isSignup ? 'block' : 'none';
+      submitBtn.textContent = isSignup ? 'Sign Up' : 'Log In';
+      document.getElementById('errorMsg').classList.remove('show');
+    });
+  });
+
+  var roleLabels = { student: 'Student', teacher: 'Teacher', principal: 'Principal' };
+  var roleSampleNames = {
+    student: 'Ava Chen',
+    teacher: 'Mr. Daniel Kessler',
+    principal: 'Dr. Naomi Reyes'
+  };
+
+  document.getElementById('authForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var errorMsg = document.getElementById('errorMsg');
+    var pw = document.getElementById('password').value;
+    var confirm = document.getElementById('confirmPassword').value;
+
+    if(mode === 'signup' && pw !== confirm){
+      errorMsg.classList.add('show');
+      return;
+    }
+    errorMsg.classList.remove('show');
+
+    var name = document.getElementById('fullName').value.trim() || roleSampleNames[selectedRole];
+    var initials = name.split(' ').filter(Boolean).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase();
+
+    document.getElementById('dashAvatar').textContent = initials || 'MH';
+    document.getElementById('dashName').textContent = name;
+    document.getElementById('dashRolePill').textContent =
+      selectedRole === 'student' ? 'Student · Grade 10' :
+      selectedRole === 'teacher' ? 'Teacher · Science Dept.' : 'Principal · Head of School';
+
+    document.getElementById('studentDash').style.display = selectedRole === 'student' ? 'block' : 'none';
+    document.getElementById('teacherDash').style.display = selectedRole === 'teacher' ? 'block' : 'none';
+    document.getElementById('principalDash').style.display = selectedRole === 'principal' ? 'block' : 'none';
+
+    document.getElementById('authView').style.display = 'none';
+    document.getElementById('dashboardView').style.display = 'block';
+    window.scrollTo(0,0);
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', function(){
+    document.getElementById('dashboardView').style.display = 'none';
+    document.getElementById('authView').style.display = 'block';
+    document.getElementById('authForm').reset();
+  });
+</script>
+
+</body>
+</html>
